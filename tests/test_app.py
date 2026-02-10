@@ -17,13 +17,30 @@ def teardown_module():
         test_db.unlink()
 
 
+def login_as_admin(test_client: TestClient):
+    resp = test_client.post(
+        "/login",
+        data={"username": "admin", "password": "admin"},
+        follow_redirects=False,
+    )
+    assert resp.status_code == 303
+
+
 def test_healthz():
     resp = client.get("/healthz")
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
 
+def test_root_requires_login():
+    resp = client.get("/", follow_redirects=False)
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/login"
+
+
 def test_asset_service_change_flow():
+    login_as_admin(client)
+
     create_asset = client.post(
         "/assets",
         data={"hostname": "node-01", "ip": "10.0.0.11", "environment": "prod", "os": "linux", "owner": "ops"},

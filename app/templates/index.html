@@ -10,127 +10,160 @@
     <header>
       <h1>Lightweight CMDB</h1>
       <p>轻量级 DevOps 运维资产与变更管理系统</p>
+      <form method="post" action="/logout">
+        <button type="submit" class="outline">退出登录</button>
+      </form>
     </header>
 
-    <main>
-      <section class="card">
-        <h2>搜索资产</h2>
-        <form method="get" action="/" class="grid grid-3">
-          <input type="text" name="q" value="{{ q }}" placeholder="按主机/IP/负责人搜索" />
-          <select name="status">
-            <option value="" {% if not status %}selected{% endif %}>全部状态</option>
-            <option value="active" {% if status == 'active' %}selected{% endif %}>active</option>
-            <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>inactive</option>
-          </select>
-          <button type="submit">查询</button>
-        </form>
-      </section>
+    <div class="layout">
+      <aside class="sidebar card">
+        <h2>目录树</h2>
+        <ul class="tree">
+          <li>
+            <span>资产管理</span>
+            <ul>
+              <li><a href="#search-assets">搜索资产</a></li>
+              <li><a href="#new-asset">新增资产</a></li>
+              <li><a href="#asset-list">资产列表</a></li>
+            </ul>
+          </li>
+          <li>
+            <span>服务管理</span>
+            <ul>
+              <li><a href="#new-service">新增服务</a></li>
+              <li><a href="#service-list">服务列表</a></li>
+            </ul>
+          </li>
+          <li>
+            <span>变更管理</span>
+            <ul>
+              <li><a href="#new-change">新增变更</a></li>
+              <li><a href="#change-list">变更列表</a></li>
+            </ul>
+          </li>
+        </ul>
+      </aside>
 
-      <section class="card">
-        <h2>新增资产</h2>
-        <form method="post" action="/assets" class="grid grid-4">
-          <input required name="hostname" placeholder="hostname" />
-          <input required name="ip" placeholder="ip" />
-          <input name="environment" value="prod" placeholder="environment" />
-          <input name="os" value="linux" placeholder="os" />
-          <input name="owner" placeholder="owner" />
-          <input name="status" value="active" placeholder="status" />
-          <input class="span-2" name="note" placeholder="note" />
-          <button type="submit">添加资产</button>
-        </form>
-      </section>
+      <main>
+        <section class="card" id="search-assets">
+          <h2>搜索资产</h2>
+          <form method="get" action="/" class="grid grid-3">
+            <input type="text" name="q" value="{{ q }}" placeholder="按主机/IP/负责人搜索" />
+            <select name="status">
+              <option value="" {% if not status %}selected{% endif %}>全部状态</option>
+              <option value="active" {% if status == 'active' %}selected{% endif %}>active</option>
+              <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>inactive</option>
+            </select>
+            <button type="submit">查询</button>
+          </form>
+        </section>
 
-      <section class="card">
-        <h2>新增服务</h2>
-        <form method="post" action="/services" class="grid grid-4">
-          <input required name="name" placeholder="service name" />
-          <input required name="asset_id" type="number" placeholder="asset id" />
-          <input name="repo_url" placeholder="repo url" />
-          <input name="deploy_method" value="ansible" placeholder="deploy method" />
-          <input name="owner" placeholder="owner" />
-          <input name="status" value="running" placeholder="status" />
-          <input class="span-2" name="note" placeholder="note" />
-          <button type="submit">添加服务</button>
-        </form>
-      </section>
+        <section class="card" id="new-asset">
+          <h2>新增资产</h2>
+          <form method="post" action="/assets" class="grid grid-4">
+            <input required name="hostname" placeholder="hostname" />
+            <input required name="ip" placeholder="ip" />
+            <input name="environment" value="prod" placeholder="environment" />
+            <input name="os" value="linux" placeholder="os" />
+            <input name="owner" placeholder="owner" />
+            <input name="status" value="active" placeholder="status" />
+            <input class="span-2" name="note" placeholder="note" />
+            <button type="submit">添加资产</button>
+          </form>
+        </section>
 
-      <section class="card">
-        <h2>新增变更</h2>
-        <form method="post" action="/changes" class="grid grid-4">
-          <input required name="title" placeholder="change title" />
-          <input required type="number" name="service_id" placeholder="service id" />
-          <input name="risk_level" value="medium" placeholder="risk level" />
-          <input name="change_window" placeholder="window" />
-          <input name="executor" placeholder="executor" />
-          <input name="approver" placeholder="approver" />
-          <input name="status" value="pending" placeholder="status" />
-          <input name="rollback_plan" placeholder="rollback plan" />
-          <button type="submit">添加变更</button>
-        </form>
-      </section>
+        <section class="card" id="new-service">
+          <h2>新增服务</h2>
+          <form method="post" action="/services" class="grid grid-4">
+            <input required name="name" placeholder="service name" />
+            <input required name="asset_id" type="number" placeholder="asset id" />
+            <input name="repo_url" placeholder="repo url" />
+            <input name="deploy_method" value="ansible" placeholder="deploy method" />
+            <input name="owner" placeholder="owner" />
+            <input name="status" value="running" placeholder="status" />
+            <input class="span-2" name="note" placeholder="note" />
+            <button type="submit">添加服务</button>
+          </form>
+        </section>
 
-      <section class="card">
-        <h2>资产列表</h2>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Hostname</th><th>IP</th><th>Env</th><th>Owner</th><th>Status</th><th>操作</th></tr>
-          </thead>
-          <tbody>
-            {% for a in assets %}
-            <tr>
-              <td>{{ a.id }}</td><td>{{ a.hostname }}</td><td>{{ a.ip }}</td><td>{{ a.environment }}</td><td>{{ a.owner }}</td><td>{{ a.status }}</td>
-              <td>
-                <form method="post" action="/assets/{{ a.id }}/delete">
-                  <button class="danger">删除</button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </section>
+        <section class="card" id="new-change">
+          <h2>新增变更</h2>
+          <form method="post" action="/changes" class="grid grid-4">
+            <input required name="title" placeholder="change title" />
+            <input required type="number" name="service_id" placeholder="service id" />
+            <input name="risk_level" value="medium" placeholder="risk level" />
+            <input name="change_window" placeholder="window" />
+            <input name="executor" placeholder="executor" />
+            <input name="approver" placeholder="approver" />
+            <input name="status" value="pending" placeholder="status" />
+            <input name="rollback_plan" placeholder="rollback plan" />
+            <button type="submit">添加变更</button>
+          </form>
+        </section>
 
-      <section class="card">
-        <h2>服务列表</h2>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Name</th><th>AssetID</th><th>Deploy</th><th>Owner</th><th>Status</th><th>操作</th></tr>
-          </thead>
-          <tbody>
-            {% for s in services %}
-            <tr>
-              <td>{{ s.id }}</td><td>{{ s.name }}</td><td>{{ s.asset_id }}</td><td>{{ s.deploy_method }}</td><td>{{ s.owner }}</td><td>{{ s.status }}</td>
-              <td>
-                <form method="post" action="/services/{{ s.id }}/delete">
-                  <button class="danger">删除</button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </section>
+        <section class="card" id="asset-list">
+          <h2>资产列表</h2>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Hostname</th><th>IP</th><th>Env</th><th>Owner</th><th>Status</th><th>操作</th></tr>
+            </thead>
+            <tbody>
+              {% for a in assets %}
+              <tr>
+                <td>{{ a.id }}</td><td>{{ a.hostname }}</td><td>{{ a.ip }}</td><td>{{ a.environment }}</td><td>{{ a.owner }}</td><td>{{ a.status }}</td>
+                <td>
+                  <form method="post" action="/assets/{{ a.id }}/delete">
+                    <button class="danger">删除</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
 
-      <section class="card">
-        <h2>变更列表</h2>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Title</th><th>ServiceID</th><th>Risk</th><th>Executor</th><th>Status</th><th>操作</th></tr>
-          </thead>
-          <tbody>
-            {% for c in changes %}
-            <tr>
-              <td>{{ c.id }}</td><td>{{ c.title }}</td><td>{{ c.service_id }}</td><td>{{ c.risk_level }}</td><td>{{ c.executor }}</td><td>{{ c.status }}</td>
-              <td>
-                <form method="post" action="/changes/{{ c.id }}/delete">
-                  <button class="danger">删除</button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </section>
-    </main>
+        <section class="card" id="service-list">
+          <h2>服务列表</h2>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>AssetID</th><th>Deploy</th><th>Owner</th><th>Status</th><th>操作</th></tr>
+            </thead>
+            <tbody>
+              {% for s in services %}
+              <tr>
+                <td>{{ s.id }}</td><td>{{ s.name }}</td><td>{{ s.asset_id }}</td><td>{{ s.deploy_method }}</td><td>{{ s.owner }}</td><td>{{ s.status }}</td>
+                <td>
+                  <form method="post" action="/services/{{ s.id }}/delete">
+                    <button class="danger">删除</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card" id="change-list">
+          <h2>变更列表</h2>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>ServiceID</th><th>Risk</th><th>Executor</th><th>Status</th><th>操作</th></tr>
+            </thead>
+            <tbody>
+              {% for c in changes %}
+              <tr>
+                <td>{{ c.id }}</td><td>{{ c.title }}</td><td>{{ c.service_id }}</td><td>{{ c.risk_level }}</td><td>{{ c.executor }}</td><td>{{ c.status }}</td>
+                <td>
+                  <form method="post" action="/changes/{{ c.id }}/delete">
+                    <button class="danger">删除</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
   </body>
 </html>

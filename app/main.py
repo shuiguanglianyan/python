@@ -21,6 +21,10 @@ def healthz():
     return {"status": "ok"}
 
 
+def is_logged_in(request: Request) -> bool:
+    return request.cookies.get("cmdb_auth") == "1"
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(
     request: Request,
@@ -28,6 +32,9 @@ def index(
     status: str = "",
     db: Session = Depends(get_db),
 ):
+    if not is_logged_in(request):
+        return RedirectResponse(url="/login", status_code=303)
+
     asset_query = select(Asset)
     if q:
         pattern = f"%{q}%"
@@ -49,6 +56,34 @@ def index(
             "status": status,
         },
     )
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    if is_logged_in(request):
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("login.html", {"request": request, "error": ""})
+
+
+@app.post("/login", response_class=HTMLResponse)
+def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    if username != "admin" or password != "admin":
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "用户名或密码错误（默认 admin/admin）"},
+            status_code=400,
+        )
+
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie("cmdb_auth", "1", httponly=True, samesite="lax")
+    return response
+
+
+@app.post("/logout")
+def logout():
+    response = RedirectResponse(url="/login", status_code=303)
+    response.delete_cookie("cmdb_auth")
+    return response
 
 
 @app.post("/assets")

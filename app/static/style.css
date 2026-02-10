@@ -13,12 +13,28 @@ header {
   background: #111827;
   color: #fff;
   padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+header h1,
+header p {
+  margin: 0;
+}
+
+.layout {
+  max-width: 1280px;
+  margin: 20px auto;
+  padding: 0 14px 30px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
 }
 
 main {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 14px 30px;
   display: grid;
   gap: 16px;
 }
@@ -30,16 +46,62 @@ main {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+.sidebar {
+  position: sticky;
+  top: 16px;
+  height: fit-content;
+}
+
+.tree,
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 14px;
+}
+
+.tree > li {
+  padding-left: 0;
+}
+
+.tree li {
+  margin: 8px 0;
+  border-left: 1px solid #cbd5e1;
+  padding-left: 10px;
+}
+
+.tree span {
+  font-weight: 600;
+}
+
+.tree a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.tree a:hover {
+  text-decoration: underline;
+}
+
 .grid {
   display: grid;
   gap: 8px;
 }
 
-.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.span-2 { grid-column: span 2; }
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 
-input, select, button {
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+input,
+select,
+button {
   padding: 9px 10px;
   border-radius: 6px;
   border: 1px solid #d1d5db;
@@ -52,21 +114,65 @@ button {
   cursor: pointer;
 }
 
-button.danger { background: #dc2626; }
+button.outline {
+  background: transparent;
+  border: 1px solid #9ca3af;
+}
+
+button.danger {
+  background: #dc2626;
+}
 
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   border-bottom: 1px solid #e5e7eb;
   text-align: left;
   padding: 8px;
   font-size: 14px;
 }
 
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 16px;
+}
+
+.login-card h1 {
+  margin-top: 0;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+}
+
 @media (max-width: 900px) {
-  .grid-3, .grid-4 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-  .span-2 { grid-column: span 1; }
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .span-2 {
+    grid-column: span 1;
+  }
 }
