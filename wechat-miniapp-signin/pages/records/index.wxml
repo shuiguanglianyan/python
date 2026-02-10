@@ -1,0 +1,21 @@
+<view class="container">
+  <view class="card head-card">
+    <view class="title">签到记录</view>
+    <view class="sub-title">总计 {{records.length}} 条</view>
+    <button class="secondary-btn" bindtap="onClearRecords">清空本地记录</button>
+  </view>
+
+  <block wx:if="{{records.length}}">
+    <view class="card record" wx:for="{{records}}" wx:key="id">
+      <view class="row">
+        <text class="name">{{item.studentName}}</text>
+        <text class="tag">{{item.course}}</text>
+      </view>
+      <view class="time">签到时间：{{item.createdAt}}</view>
+      <view class="op">登记人：{{item.operator}}</view>
+      <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+    </view>
+  </block>
+
+  <view class="empty" wx:else>暂无签到记录，先去“签到”页登记吧。</view>
+</view>

@@ -1,0 +1,42 @@
+.head-card .secondary-btn {
+  margin-top: 20rpx;
+}
+
+.record {
+  margin-bottom: 18rpx;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111827;
+}
+
+.tag {
+  font-size: 24rpx;
+  color: #1a73e8;
+  background: #e8f0fe;
+  border-radius: 999rpx;
+  padding: 6rpx 16rpx;
+}
+
+.time,
+.op,
+.remark {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #4b5563;
+}
+
+.empty {
+  text-align: center;
+  margin-top: 180rpx;
+  color: #9ca3af;
+  font-size: 28rpx;
+}

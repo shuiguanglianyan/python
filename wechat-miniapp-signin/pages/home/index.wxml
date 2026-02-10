@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="card">
+    <view class="title">课程签到</view>
+    <view class="sub-title">支持钢琴课 / 古筝课现场签到</view>
+  </view>
+
+  <view class="card">
+    <view class="field">
+      <text class="label">选择课程</text>
+      <picker mode="selector" range="{{courses}}" bindchange="onCourseChange">
+        <view class="picker">{{selectedCourse}}</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="label">学员姓名</text>
+      <input
+        class="input"
+        placeholder="请输入学员姓名"
+        value="{{studentName}}"
+        bindinput="onStudentInput"
+      />
+    </view>
+
+    <view class="field">
+      <text class="label">备注（可选）</text>
+      <textarea
+        class="textarea"
+        placeholder="例如：迟到 5 分钟"
+        value="{{remark}}"
+        bindinput="onRemarkInput"
+      />
+    </view>
+
+    <button class="primary-btn" bindtap="doSignIn">立即签到</button>
+  </view>
+</view>

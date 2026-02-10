@@ -70,3 +70,17 @@ pytest -q
 - 接入企业 SSO（OIDC/SAML）替换默认账号。
 - 在网关层启用 HTTPS、WAF、审计与限流。
 - 增加 RBAC、多租户、审计日志与告警闭环。
+
+
+## 额外工程：课程签到微信小程序
+
+已新增可直接运行的小程序工程：`wechat-miniapp-signin/`，支持钢琴课与古筝课签到。
+
+快速开始：
+
+```bash
+# 用微信开发者工具导入目录
+wechat-miniapp-signin
+```
+
+详细说明见：`wechat-miniapp-signin/README.md`。
