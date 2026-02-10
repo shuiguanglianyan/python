@@ -74,20 +74,21 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
             status_code=400,
         )
 
-    response = RedirectResponse(url="/", status_code=303)
+    response = RedirectResponse(url=request.url_for("index"), status_code=303)
     response.set_cookie("cmdb_auth", "1", httponly=True, samesite="lax")
     return response
 
 
 @app.post("/logout")
-def logout():
-    response = RedirectResponse(url="/login", status_code=303)
+def logout(request: Request):
+    response = RedirectResponse(url=request.url_for("login_page"), status_code=303)
     response.delete_cookie("cmdb_auth")
     return response
 
 
 @app.post("/assets")
 def create_asset(
+    request: Request,
     hostname: str = Form(...),
     ip: str = Form(...),
     environment: str = Form("prod"),
@@ -105,11 +106,12 @@ def create_asset(
     asset = Asset(**payload.model_dump())
     db.add(asset)
     db.commit()
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
 @app.post("/services")
 def create_service(
+    request: Request,
     name: str = Form(...),
     asset_id: int = Form(...),
     repo_url: str = Form(""),
@@ -139,11 +141,12 @@ def create_service(
     service = Service(**payload.model_dump())
     db.add(service)
     db.commit()
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
 @app.post("/changes")
 def create_change(
+    request: Request,
     title: str = Form(...),
     service_id: int = Form(...),
     risk_level: str = Form("medium"),
@@ -172,37 +175,37 @@ def create_change(
     change = ChangeRecord(**payload.model_dump())
     db.add(change)
     db.commit()
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
 @app.post("/assets/{asset_id}/delete")
-def delete_asset(asset_id: int, db: Session = Depends(get_db)):
+def delete_asset(request: Request, asset_id: int, db: Session = Depends(get_db)):
     asset = db.get(Asset, asset_id)
     if not asset:
         raise HTTPException(status_code=404, detail="asset not found")
     db.delete(asset)
     db.commit()
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
 @app.post("/services/{service_id}/delete")
-def delete_service(service_id: int, db: Session = Depends(get_db)):
+def delete_service(request: Request, service_id: int, db: Session = Depends(get_db)):
     service = db.get(Service, service_id)
     if not service:
         raise HTTPException(status_code=404, detail="service not found")
     db.delete(service)
     db.commit()
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
 @app.post("/changes/{change_id}/delete")
-def delete_change(change_id: int, db: Session = Depends(get_db)):
+def delete_change(request: Request, change_id: int, db: Session = Depends(get_db)):
     change = db.get(ChangeRecord, change_id)
     if not change:
         raise HTTPException(status_code=404, detail="change not found")
     db.delete(change)
     db.commit()
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
 @app.get("/api/assets")

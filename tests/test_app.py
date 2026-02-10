@@ -67,3 +67,15 @@ def test_asset_service_change_flow():
         follow_redirects=False,
     )
     assert create_change.status_code == 303
+
+
+def test_login_redirect_respects_root_path():
+    prefixed_client = TestClient(app, root_path="/cmdb")
+    resp = prefixed_client.post(
+        "/login",
+        data={"username": "admin", "password": "admin"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    assert resp.headers["location"].endswith("/cmdb/")
