@@ -1,13 +1,26 @@
-# Lightweight CMDB
+# devops-cmdb
 
-一个轻量级、可投入生产的小型 DevOps 运维 CMDB：
-- FastAPI + SQLite（默认）
-- Jinja2 页面 + 简单响应式样式
-- 资产、服务、变更记录管理
-- 关键词搜索与状态筛选
-- Docker 一键启动，开箱即用
+一个可直接落地的 DevOps CMDB 示例项目，包含资产、服务、变更三大核心域，提供 Web 管理页面 + OpenAPI。
 
-## 快速开始（本地）
+## 功能特性
+
+- 资产管理：新增、删除、搜索、状态筛选。
+- 服务管理：关联资产，追踪仓库与部署方式。
+- 变更管理：记录风险等级、变更窗口、执行人与回滚计划。
+- 总览看板：资产数、服务数、待处理变更数。
+- API 接口：支持列表/更新/删除与总览统计。
+- Docker 一键启动。
+
+## 技术栈
+
+- FastAPI
+- SQLAlchemy 2.0
+- Jinja2
+- SQLite（可通过 `DATABASE_URL` 切换到 PostgreSQL/MySQL）
+
+## 启动方式
+
+### 本地
 
 ```bash
 python -m venv .venv
@@ -18,26 +31,34 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 访问：<http://localhost:8000>
 
-## 一键启动（Docker）
+默认登录：`admin / admin`
+
+### Docker
 
 ```bash
 docker compose up -d --build
 ```
 
-访问：<http://localhost:8000>
-
 ## API 文档
 
-- Swagger UI: `/docs`
+- Swagger: `/docs`
 - OpenAPI: `/openapi.json`
 
-## 数据模型
+## 目录结构
 
-- **Assets（资产）**：主机名、IP、环境、系统、负责人、状态、备注
-- **Services（服务）**：服务名、所属资产、仓库地址、部署方式、负责人、状态、备注
-- **Changes（变更记录）**：标题、关联服务、风险等级、变更窗口、执行人、审批人、状态、回滚计划
+```text
+app/
+  main.py             # 路由与业务逻辑
+  db.py               # 数据库连接
+  models.py           # ORM 模型
+  schemas.py          # Pydantic 数据模型
+  templates/          # Jinja2 页面
+  static/             # 样式资源
+tests/
+  test_app.py
+```
 
-## 运行测试
+## 测试
 
 ```bash
 pytest -q
@@ -45,6 +66,7 @@ pytest -q
 
 ## 生产建议
 
-- 使用外部数据库（PostgreSQL/MySQL），将 `DATABASE_URL` 指向生产库
-- 在反向代理（Nginx/Caddy）后运行，启用 HTTPS
-- 根据组织需求接入 SSO、RBAC、审计日志与告警系统
+- 使用 PostgreSQL + Alembic 做迁移管理。
+- 接入企业 SSO（OIDC/SAML）替换默认账号。
+- 在网关层启用 HTTPS、WAF、审计与限流。
+- 增加 RBAC、多租户、审计日志与告警闭环。

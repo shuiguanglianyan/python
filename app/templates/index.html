@@ -3,13 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lightweight CMDB</title>
+    <title>devops-cmdb</title>
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
     <header>
-      <h1>Lightweight CMDB</h1>
-      <p>轻量级 DevOps 运维资产与变更管理系统</p>
+      <div>
+        <h1>devops-cmdb</h1>
+        <p>生产级 DevOps 运维 CMDB（资产 / 服务 / 变更）</p>
+      </div>
       <form method="post" action="/logout">
         <button type="submit" class="outline">退出登录</button>
       </form>
@@ -17,8 +19,14 @@
 
     <div class="layout">
       <aside class="sidebar card">
-        <h2>目录树</h2>
+        <h2>系统导航</h2>
         <ul class="tree">
+          <li>
+            <span>总览</span>
+            <ul>
+              <li><a href="#overview">指标看板</a></li>
+            </ul>
+          </li>
           <li>
             <span>资产管理</span>
             <ul>
@@ -45,11 +53,29 @@
       </aside>
 
       <main>
+        <section class="card" id="overview">
+          <h2>指标看板</h2>
+          <div class="stats-grid">
+            <article>
+              <h3>资产总数</h3>
+              <p>{{ total_assets }}</p>
+            </article>
+            <article>
+              <h3>服务总数</h3>
+              <p>{{ total_services }}</p>
+            </article>
+            <article>
+              <h3>待处理变更</h3>
+              <p>{{ pending_changes }}</p>
+            </article>
+          </div>
+        </section>
+
         <section class="card" id="search-assets">
           <h2>搜索资产</h2>
           <form method="get" action="/" class="grid grid-3">
             <input type="text" name="q" value="{{ q }}" placeholder="按主机/IP/负责人搜索" />
-            <select name="status">
+            <select name="status_filter">
               <option value="" {% if not status %}selected{% endif %}>全部状态</option>
               <option value="active" {% if status == 'active' %}selected{% endif %}>active</option>
               <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>inactive</option>
@@ -89,14 +115,14 @@
         <section class="card" id="new-change">
           <h2>新增变更</h2>
           <form method="post" action="/changes" class="grid grid-4">
-            <input required name="title" placeholder="change title" />
-            <input required type="number" name="service_id" placeholder="service id" />
-            <input name="risk_level" value="medium" placeholder="risk level" />
+            <input required name="title" placeholder="change title" class="span-2" />
+            <input required name="service_id" type="number" placeholder="service id" />
+            <input name="risk_level" value="medium" placeholder="risk" />
             <input name="change_window" placeholder="window" />
             <input name="executor" placeholder="executor" />
             <input name="approver" placeholder="approver" />
             <input name="status" value="pending" placeholder="status" />
-            <input name="rollback_plan" placeholder="rollback plan" />
+            <input class="span-2" name="rollback_plan" placeholder="rollback plan" />
             <button type="submit">添加变更</button>
           </form>
         </section>

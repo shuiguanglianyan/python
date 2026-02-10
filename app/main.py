@@ -1,15 +1,28 @@
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from .db import Base, engine, get_db
 from .models import Asset, ChangeRecord, Service
-from .schemas import AssetCreate, ChangeCreate, ServiceCreate
+from .schemas import (
+    AssetCreate,
+    AssetUpdate,
+    ChangeCreate,
+    ChangeUpdate,
+    ServiceCreate,
+    ServiceUpdate,
+)
 
-app = FastAPI(title="Lightweight CMDB", version="0.1.0")
+APP_TITLE = "devops-cmdb"
+
+app = FastAPI(
+    title=APP_TITLE,
+    version="1.0.0",
+    description="生产可用的 DevOps CMDB（资产、服务、变更）",
+)
 Base.metadata.create_all(bind=engine)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -18,18 +31,28 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/healthz")
 def healthz():
-    return {"status": "ok"}
+    return {"status": "ok", "service": APP_TITLE}
+
+
+# 生产中应替换为 SSO/OIDC，这里提供可配置默认账号
+DEFAULT_USERNAME = "admin"
+DEFAULT_PASSWORD = "admin"
 
 
 def is_logged_in(request: Request) -> bool:
     return request.cookies.get("cmdb_auth") == "1"
 
 
+def require_login(request: Request):
+    if not is_logged_in(request):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="not authenticated")
+
+
 @app.get("/", response_class=HTMLResponse)
 def index(
     request: Request,
     q: str = "",
-    status: str = "",
+    status_filter: str = "",
     db: Session = Depends(get_db),
 ):
     if not is_logged_in(request):
@@ -39,12 +62,17 @@ def index(
     if q:
         pattern = f"%{q}%"
         asset_query = asset_query.where(or_(Asset.hostname.like(pattern), Asset.ip.like(pattern), Asset.owner.like(pattern)))
-    if status:
-        asset_query = asset_query.where(Asset.status == status)
+    if status_filter:
+        asset_query = asset_query.where(Asset.status == status_filter)
 
     assets = db.execute(asset_query.order_by(Asset.id.desc())).scalars().all()
     services = db.execute(select(Service).order_by(Service.id.desc())).scalars().all()
     changes = db.execute(select(ChangeRecord).order_by(ChangeRecord.id.desc())).scalars().all()
+
+    total_assets = db.scalar(select(func.count()).select_from(Asset)) or 0
+    total_services = db.scalar(select(func.count()).select_from(Service)) or 0
+    pending_changes = db.scalar(select(func.count()).select_from(ChangeRecord).where(ChangeRecord.status == "pending")) or 0
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -53,7 +81,10 @@ def index(
             "services": services,
             "changes": changes,
             "q": q,
-            "status": status,
+            "status": status_filter,
+            "total_assets": total_assets,
+            "total_services": total_services,
+            "pending_changes": pending_changes,
         },
     )
 
@@ -67,7 +98,7 @@ def login_page(request: Request):
 
 @app.post("/login", response_class=HTMLResponse)
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    if username != "admin" or password != "admin":
+    if username != DEFAULT_USERNAME or password != DEFAULT_PASSWORD:
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "用户名或密码错误（默认 admin/admin）"},
@@ -130,8 +161,7 @@ def create_service(
         status=status,
         note=note,
     )
-    asset = db.get(Asset, payload.asset_id)
-    if not asset:
+    if not db.get(Asset, payload.asset_id):
         raise HTTPException(status_code=404, detail="asset not found")
 
     duplicated = db.execute(select(Service).where(Service.name == payload.name)).scalar_one_or_none()
@@ -168,8 +198,7 @@ def create_change(
         rollback_plan=rollback_plan,
     )
 
-    service = db.get(Service, payload.service_id)
-    if not service:
+    if not db.get(Service, payload.service_id):
         raise HTTPException(status_code=404, detail="service not found")
 
     change = ChangeRecord(**payload.model_dump())
@@ -208,19 +237,124 @@ def delete_change(request: Request, change_id: int, db: Session = Depends(get_db
     return RedirectResponse(url=request.url_for("index"), status_code=303)
 
 
-@app.get("/api/assets")
+def _asset_to_dict(a: Asset):
+    return {
+        "id": a.id,
+        "hostname": a.hostname,
+        "ip": a.ip,
+        "environment": a.environment,
+        "os": a.os,
+        "owner": a.owner,
+        "status": a.status,
+        "note": a.note,
+    }
+
+
+def _service_to_dict(s: Service):
+    return {
+        "id": s.id,
+        "name": s.name,
+        "asset_id": s.asset_id,
+        "repo_url": s.repo_url,
+        "deploy_method": s.deploy_method,
+        "owner": s.owner,
+        "status": s.status,
+        "note": s.note,
+    }
+
+
+def _change_to_dict(c: ChangeRecord):
+    return {
+        "id": c.id,
+        "title": c.title,
+        "service_id": c.service_id,
+        "risk_level": c.risk_level,
+        "change_window": c.change_window,
+        "executor": c.executor,
+        "approver": c.approver,
+        "status": c.status,
+        "rollback_plan": c.rollback_plan,
+    }
+
+
+@app.get("/api/overview", dependencies=[Depends(require_login)])
+def api_overview(db: Session = Depends(get_db)):
+    return {
+        "asset_count": db.scalar(select(func.count()).select_from(Asset)) or 0,
+        "service_count": db.scalar(select(func.count()).select_from(Service)) or 0,
+        "change_count": db.scalar(select(func.count()).select_from(ChangeRecord)) or 0,
+    }
+
+
+@app.get("/api/assets", dependencies=[Depends(require_login)])
 def list_assets(db: Session = Depends(get_db)):
     assets = db.execute(select(Asset).order_by(Asset.id.desc())).scalars().all()
-    return [
-        {
-            "id": a.id,
-            "hostname": a.hostname,
-            "ip": a.ip,
-            "environment": a.environment,
-            "os": a.os,
-            "owner": a.owner,
-            "status": a.status,
-            "note": a.note,
-        }
-        for a in assets
-    ]
+    return [_asset_to_dict(a) for a in assets]
+
+
+@app.put("/api/assets/{asset_id}", dependencies=[Depends(require_login)])
+def update_asset(asset_id: int, payload: AssetUpdate, db: Session = Depends(get_db)):
+    asset = db.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="asset not found")
+    for key, value in payload.model_dump(exclude_unset=True).items():
+        setattr(asset, key, value)
+    db.commit()
+    db.refresh(asset)
+    return _asset_to_dict(asset)
+
+
+@app.delete("/api/assets/{asset_id}", dependencies=[Depends(require_login)])
+def delete_asset_api(asset_id: int, db: Session = Depends(get_db)):
+    asset = db.get(Asset, asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="asset not found")
+    db.delete(asset)
+    db.commit()
+    return {"deleted": True}
+
+
+@app.get("/api/services", dependencies=[Depends(require_login)])
+def list_services(db: Session = Depends(get_db)):
+    services = db.execute(select(Service).order_by(Service.id.desc())).scalars().all()
+    return [_service_to_dict(s) for s in services]
+
+
+@app.put("/api/services/{service_id}", dependencies=[Depends(require_login)])
+def update_service(service_id: int, payload: ServiceUpdate, db: Session = Depends(get_db)):
+    service = db.get(Service, service_id)
+    if not service:
+        raise HTTPException(status_code=404, detail="service not found")
+
+    updates = payload.model_dump(exclude_unset=True)
+    if "asset_id" in updates and not db.get(Asset, updates["asset_id"]):
+        raise HTTPException(status_code=404, detail="asset not found")
+
+    for key, value in updates.items():
+        setattr(service, key, value)
+    db.commit()
+    db.refresh(service)
+    return _service_to_dict(service)
+
+
+@app.get("/api/changes", dependencies=[Depends(require_login)])
+def list_changes(db: Session = Depends(get_db)):
+    changes = db.execute(select(ChangeRecord).order_by(ChangeRecord.id.desc())).scalars().all()
+    return [_change_to_dict(c) for c in changes]
+
+
+@app.put("/api/changes/{change_id}", dependencies=[Depends(require_login)])
+def update_change(change_id: int, payload: ChangeUpdate, db: Session = Depends(get_db)):
+    change = db.get(ChangeRecord, change_id)
+    if not change:
+        raise HTTPException(status_code=404, detail="change not found")
+
+    updates = payload.model_dump(exclude_unset=True)
+    if "service_id" in updates and not db.get(Service, updates["service_id"]):
+        raise HTTPException(status_code=404, detail="service not found")
+
+    for key, value in updates.items():
+        setattr(change, key, value)
+    db.commit()
+    db.refresh(change)
+    return _change_to_dict(change)

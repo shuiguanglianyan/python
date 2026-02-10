@@ -46,6 +46,31 @@ main {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+.stats-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stats-grid article {
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.stats-grid h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #2563eb;
+}
+
+.stats-grid p {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 700;
+}
+
 .sidebar {
   position: sticky;
   top: 16px;
@@ -163,6 +188,10 @@ td {
 
   .sidebar {
     position: static;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
 
