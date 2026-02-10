@@ -5,5 +5,15 @@ services:
     ports:
       - "8000:8000"
     environment:
+<<<<<<< HEAD
       - DATABASE_URL=sqlite:///./cmdb.db
     restart: unless-stopped
+=======
+      - DATABASE_URL=sqlite:////app/data/cmdb.db
+    volumes:
+      - cmdb_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  cmdb_data:
+>>>>>>> codex/create-lightweight-production-ready-cmdb-system
