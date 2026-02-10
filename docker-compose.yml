@@ -5,7 +5,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-    restart: unless-stopped
       - DATABASE_URL=sqlite:////app/data/cmdb.db
     volumes:
       - cmdb_data:/app/data
