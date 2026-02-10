@@ -1,0 +1,9 @@
+services:
+  cmdb:
+    build: .
+    container_name: lightweight-cmdb
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./cmdb.db
+    restart: unless-stopped
