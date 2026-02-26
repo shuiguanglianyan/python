@@ -25,6 +25,7 @@
             <span>总览</span>
             <ul>
               <li><a href="#overview">指标看板</a></li>
+              <li><a href="#veops-map">VEOPS 功能全景</a></li>
             </ul>
           </li>
           <li>
@@ -49,6 +50,13 @@
               <li><a href="#change-list">变更列表</a></li>
             </ul>
           </li>
+          <li>
+            <span>平台接口</span>
+            <ul>
+              <li><a href="#api-section">OpenAPI</a></li>
+              <li><a href="#veops-plan">能力补齐计划</a></li>
+            </ul>
+          </li>
         </ul>
       </aside>
 
@@ -68,6 +76,26 @@
               <h3>待处理变更</h3>
               <p>{{ pending_changes }}</p>
             </article>
+          </div>
+        </section>
+
+        <section class="card" id="veops-map">
+          <h2>VEOPS CMDB 功能映射</h2>
+          <p class="muted">以下模块参考 VEOPS CMDB 的能力面，确保每个功能都在本系统中有体现（已支持 / 部分支持 / 规划中）。</p>
+          <div class="feature-groups">
+            {% for group in veops_feature_map %}
+            <article>
+              <h3>{{ group["group"] }}</h3>
+              <ul>
+                {% for item in group["items"] %}
+                <li>
+                  <a href="#{{ item.anchor }}">{{ item.name }}</a>
+                  <span class="tag {% if item.status == '已支持' %}tag-ok{% elif item.status == '部分支持' %}tag-partial{% else %}tag-plan{% endif %}">{{ item.status }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </article>
+            {% endfor %}
           </div>
         </section>
 
@@ -188,6 +216,26 @@
               {% endfor %}
             </tbody>
           </table>
+        </section>
+
+        <section class="card" id="api-section">
+          <h2>平台接口</h2>
+          <div class="api-links">
+            <a href="/docs" target="_blank" rel="noreferrer">Swagger 文档 /docs</a>
+            <a href="/openapi.json" target="_blank" rel="noreferrer">OpenAPI /openapi.json</a>
+            <a href="/api/overview" target="_blank" rel="noreferrer">总览 API /api/overview</a>
+          </div>
+        </section>
+
+        <section class="card" id="veops-plan">
+          <h2>能力补齐计划（对齐 VEOPS）</h2>
+          <ol>
+            <li>模型中心：增加模型、属性、关系、约束、生命周期管理。</li>
+            <li>关系拓扑：新增服务与资产的可视化拓扑视图。</li>
+            <li>审计体系：增加操作日志、变更历史、回收站恢复。</li>
+            <li>权限体系：引入 RBAC、多租户、细粒度数据权限。</li>
+            <li>自动化：引入审批流、任务编排、Webhook 同步。</li>
+          </ol>
         </section>
       </main>
     </div>

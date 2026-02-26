@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -19,7 +20,7 @@ class Asset(Base):
     note: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    services: Mapped[list["Service"]] = relationship(back_populates="asset", cascade="all, delete-orphan")
+    services: Mapped[List["Service"]] = relationship(back_populates="asset", cascade="all, delete-orphan")
 
 
 class Service(Base):
@@ -36,7 +37,7 @@ class Service(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     asset: Mapped[Asset] = relationship(back_populates="services")
-    changes: Mapped[list["ChangeRecord"]] = relationship(back_populates="service", cascade="all, delete-orphan")
+    changes: Mapped[List["ChangeRecord"]] = relationship(back_populates="service", cascade="all, delete-orphan")
 
 
 class ChangeRecord(Base):

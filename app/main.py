@@ -18,6 +18,39 @@ from .schemas import (
 
 APP_TITLE = "devops-cmdb"
 
+VEOPS_FEATURE_MAP = [
+    {
+        "group": "CMDB 核心",
+        "items": [
+            {"name": "模型设计（模型/属性/分组）", "status": "规划中", "anchor": "veops-plan"},
+            {"name": "CI 列表与详情", "status": "已支持", "anchor": "asset-list"},
+            {"name": "关系视图与拓扑", "status": "规划中", "anchor": "veops-plan"},
+            {"name": "批量导入导出", "status": "规划中", "anchor": "veops-plan"},
+            {"name": "回收站与历史审计", "status": "规划中", "anchor": "veops-plan"},
+        ],
+    },
+    {
+        "group": "服务与发布",
+        "items": [
+            {"name": "服务台账", "status": "已支持", "anchor": "service-list"},
+            {"name": "应用仓库信息", "status": "已支持", "anchor": "service-list"},
+            {"name": "部署方式与运行状态", "status": "已支持", "anchor": "service-list"},
+            {"name": "变更流程记录", "status": "已支持", "anchor": "change-list"},
+            {"name": "审批编排与自动化作业", "status": "规划中", "anchor": "veops-plan"},
+        ],
+    },
+    {
+        "group": "平台能力",
+        "items": [
+            {"name": "资源搜索", "status": "已支持", "anchor": "search-assets"},
+            {"name": "统计看板", "status": "已支持", "anchor": "overview"},
+            {"name": "权限与角色（RBAC）", "status": "规划中", "anchor": "veops-plan"},
+            {"name": "Webhook / OpenAPI 集成", "status": "部分支持", "anchor": "api-section"},
+            {"name": "多租户与组织隔离", "status": "规划中", "anchor": "veops-plan"},
+        ],
+    },
+]
+
 app = FastAPI(
     title=APP_TITLE,
     version="1.0.0",
@@ -85,6 +118,7 @@ def index(
             "total_assets": total_assets,
             "total_services": total_services,
             "pending_changes": pending_changes,
+            "veops_feature_map": VEOPS_FEATURE_MAP,
         },
     )
 
