@@ -88,6 +88,9 @@
               <h3>{{ group["group"] }}</h3>
               <ul>
                 {% for item in group["items"] %}
+              <h3>{{ group.group }}</h3>
+              <ul>
+                {% for item in group.items %}
                 <li>
                   <a href="#{{ item.anchor }}">{{ item.name }}</a>
                   <span class="tag {% if item.status == '已支持' %}tag-ok{% elif item.status == '部分支持' %}tag-partial{% else %}tag-plan{% endif %}">{{ item.status }}</span>
