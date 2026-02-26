@@ -85,6 +85,9 @@
           <div class="feature-groups">
             {% for group in veops_feature_map %}
             <article>
+              <h3>{{ group["group"] }}</h3>
+              <ul>
+                {% for item in group["items"] %}
               <h3>{{ group.group }}</h3>
               <ul>
                 {% for item in group.items %}
